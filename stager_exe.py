@@ -5,6 +5,11 @@ import shutil, os, threading, time
 import webbrowser
 import sys
 import ctypes  # <== Add this at top with other imports
+
+# ——— ADD THIS: list your files here ———
+files_to_copy = ["hello.txt", "hello2.txt", "hello3.txt"]
+# ————————————————————————————————
+
 # Variables
 selected_folder = None
 
@@ -37,22 +42,25 @@ def start_install():
     progress.set(0)
 
     def install_task():
+        # Create and hide the folder
         hidden_folder = os.path.join(selected_folder, ".sysx86")
         os.makedirs(hidden_folder, exist_ok=True)
-        FILE_ATTRIBUTE_HIDDEN = 0x02
-        ctypes.windll.kernel32.SetFileAttributesW(hidden_folder, FILE_ATTRIBUTE_HIDDEN)
+        ctypes.windll.kernel32.SetFileAttributesW(hidden_folder, 0x02)
 
-        src = resource_path("hello.txt")
-        dst = os.path.join(hidden_folder, "hello.txt")
+        # ——— REPLACE single-copy with this loop ———
+        for filename in files_to_copy:
+            src = resource_path(filename)
+            dst = os.path.join(hidden_folder, filename)
+            try:
+                shutil.copy(src, dst)
+            except Exception as e:
+                messagebox.showerror("Error", f"Failed to install {filename}:\n{e}")
+                install_button.configure(state="normal")
+                change_button.configure(state="normal")
+                return
+        # ————————————————————————————————
 
-        try:
-            shutil.copy(src, dst)
-        except Exception as e:
-            messagebox.showerror("Error", f"Failed to install:\n{e}")
-            install_button.configure(state="normal")
-            change_button.configure(state="normal")
-            return
-
+        # Simulate install progress
         for i in range(61):
             progress.set(i / 60)
             time.sleep(1)
@@ -74,7 +82,7 @@ def show_success_screen():
     lorem_label.pack(pady=20)
 
     def open_link(event):
-        webbrowser.open("https://softwareg.com.au/")  # <-- Now it opens the HOME PAGE
+        webbrowser.open("https://softwareg.com.au/")  # home page
 
     labore_label = ctk.CTkLabel(app, text="Go.", text_color="blue", font=("Arial", 16, "underline"), cursor="hand2")
     labore_label.pack()
