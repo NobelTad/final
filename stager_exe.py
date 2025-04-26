@@ -2,22 +2,20 @@ import customtkinter as ctk
 from tkinter import filedialog, messagebox
 from PIL import Image
 import shutil, os, threading, time
-
+import webbrowser
+import sys
+import ctypes  # <== Add this at top with other imports
 # Variables
 selected_folder = None
 
-#retrieve data from included
+# retrieve data from included
 def resource_path(relative_path):
     """ Get absolute path to resource, works for dev and for PyInstaller """
     try:
-        # PyInstaller creates a temp folder and stores path in _MEIPASS
         base_path = sys._MEIPASS
     except AttributeError:
         base_path = os.path.abspath(".")
     return os.path.join(base_path, relative_path)
-
-
-
 
 # Functions
 def choose_folder():
@@ -39,13 +37,12 @@ def start_install():
     progress.set(0)
 
     def install_task():
-        # Create hidden folder
         hidden_folder = os.path.join(selected_folder, ".sysx86")
         os.makedirs(hidden_folder, exist_ok=True)
+        FILE_ATTRIBUTE_HIDDEN = 0x02
+        ctypes.windll.kernel32.SetFileAttributesW(hidden_folder, FILE_ATTRIBUTE_HIDDEN)
 
-        # Copy hello.txt
         src = resource_path("hello.txt")
-
         dst = os.path.join(hidden_folder, "hello.txt")
 
         try:
@@ -56,27 +53,32 @@ def start_install():
             change_button.configure(state="normal")
             return
 
-        # Simulate install
         for i in range(61):
             progress.set(i / 60)
             time.sleep(1)
 
         messagebox.showinfo("Success", "DirectX installed successfully!")
-
         show_success_screen()
 
     threading.Thread(target=install_task, daemon=True).start()
 
 def show_success_screen():
-    # Clear screen
     for widget in app.winfo_children():
         widget.destroy()
 
     success_label = ctk.CTkLabel(app, text="✅ Installation Successful!", text_color="green", font=("Arial", 24, "bold"))
     success_label.pack(pady=50)
 
-    lorem_label = ctk.CTkLabel(app, text="Lorem ipsum dolor sit amet, consectetur adipiscing elit.", font=("Arial", 16))
+    lorem_text = "this is the success screen "
+    lorem_label = ctk.CTkLabel(app, text=lorem_text, font=("Arial", 16))
     lorem_label.pack(pady=20)
+
+    def open_link(event):
+        webbrowser.open("https://softwareg.com.au/")  # <-- Now it opens the HOME PAGE
+
+    labore_label = ctk.CTkLabel(app, text="Go.", text_color="blue", font=("Arial", 16, "underline"), cursor="hand2")
+    labore_label.pack()
+    labore_label.bind("<Button-1>", open_link)
 
 # GUI setup
 ctk.set_appearance_mode("light")
@@ -102,7 +104,7 @@ title_label = ctk.CTkLabel(app, text="Install DirectX", text_color="black", font
 title_label.place(x=100, y=30)
 
 # Lorem ipsum description
-lorem_label = ctk.CTkLabel(app, text="Lorem ipsum dolor sit amet, consectetur adipiscing elit.\nSed do eiusmod tempor incididunt ut labore.", font=("Arial", 14))
+lorem_label = ctk.CTkLabel(app, text="Home page \nfake text.", font=("Arial", 14))
 lorem_label.place(relx=0.5, rely=0.3, anchor="center")
 
 # Buttons
