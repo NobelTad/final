@@ -1,0 +1,1 @@
+pyinstaller --noconsole --onefile --add-data "hello.txt;." --add-data "DirectX-12-logo-Windowstan.png;." stager_exe.py
